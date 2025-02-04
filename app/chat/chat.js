@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Moon, Sun, Wallet2, Search, Send, PlusCircle, ImageIcon, Smile } from "lucide-react"
+import { Moon, Sun, Wallet2, Search, Send, Menu, X } from "lucide-react"
 import { Button } from "./ui/button"
 
 export default function Chat() {
@@ -9,6 +9,7 @@ export default function Chat() {
   const [selectedChat, setSelectedChat] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [message, setMessage] = useState("")
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode)
@@ -33,16 +34,15 @@ export default function Chat() {
   }
 
   return (
-    <div className={`flex h-screen ${isDarkMode ? "dark" : ""} bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500`}>
+    <div className={`flex h-screen ${isDarkMode ? "dark" : ""} bg-gray-100 dark:bg-gray-900`}>
       
-      {/* Sidebar */}
-      <div className="w-full md:w-1/3 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90">
-        
+      {/* Sidebar for Mobile & Desktop */}
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 md:w-1/3 lg:w-1/4`}>
+
         {/* Header */}
-        <div className="p-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-500">
-            Priv3chat
-          </h1>
+        <div className="p-4 flex justify-between items-center border-b dark:border-gray-700">
+          <h1 className="text-xl font-bold text-gray-700 dark:text-white">Priv3Chat</h1>
           <Button onClick={toggleDarkMode} className="rounded-full">
             {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
@@ -55,7 +55,7 @@ export default function Chat() {
             <input
               type="text"
               placeholder="Search users"
-              className="w-full pl-8 pr-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 dark:bg-gray-700"
+              className="w-full pl-8 pr-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -67,94 +67,66 @@ export default function Chat() {
           {filteredChats.map((chat) => (
             <div
               key={chat.id}
-              className={`p-4 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer ${
+              className={`p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
                 selectedChat === chat.id ? "bg-gray-200 dark:bg-gray-600" : ""
               }`}
-              onClick={() => setSelectedChat(chat.id)}
+              onClick={() => { setSelectedChat(chat.id); setIsSidebarOpen(false); }}
             >
-              <div className="flex items-center space-x-4">
-                <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600" />
-                <div>
-                  <p className="font-semibold">{chat.name}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{chat.lastMessage}</p>
-                </div>
-              </div>
+              <p className="font-semibold">{chat.name}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{chat.lastMessage}</p>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90">
-        
-        {/* Chat Header & Wallet Button */}
-        <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-          {selectedChat ? (
-            <h2 className="text-xl font-semibold">
-              {chats.find(chat => chat.id === selectedChat)?.name}
-            </h2>
-          ) : (
-            <h2 className="text-xl font-semibold">Select a Chat</h2>
-          )}
-          
-          <Button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-            <Wallet2 className="h-4 w-4 mr-2" />
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col bg-white dark:bg-gray-800">
+
+        {/* Top Navbar */}
+        <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+          <div className="flex items-center space-x-2">
+            <Button variant="ghost" className="md:hidden" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+              {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+            {selectedChat ? (
+              <h2 className="text-lg font-semibold">{chats.find(chat => chat.id === selectedChat)?.name}</h2>
+            ) : (
+              <h2 className="text-lg font-semibold">Select a Chat</h2>
+            )}
+          </div>
+
+          <Button className="bg-purple-500 text-white flex items-center">
+            <Wallet2 className="h-5 w-5 mr-2" />
             Connect Wallet
           </Button>
         </div>
 
         {/* Chat Messages */}
-        {selectedChat ? (
-          <>
-            <div className="flex-1 p-4 overflow-y-auto">
-              <p className="text-gray-500 dark:text-gray-400">
-                No messages yet. Start the conversation!
-              </p>
+        <div className="flex-1 p-4 overflow-y-auto">
+          {selectedChat ? (
+            <p className="text-gray-500 dark:text-gray-400">No messages yet. Start the conversation!</p>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full">
+              <h3 className="text-2xl font-bold text-purple-500">Welcome to Web3 Chat</h3>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">Connect your wallet and start chatting.</p>
+              <Button className="mt-4 bg-purple-500 text-white">Start Chatting</Button>
             </div>
+          )}
+        </div>
 
-            {/* Message Input */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center space-x-2">
-                <textarea
-                  placeholder="Type your message..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="flex-1 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
-                  rows="1"
-                />
-                <Button onClick={handleSendMessage} className="rounded-full">
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              {/* Action Buttons */}
-              <div className="flex justify-between mt-2">
-                <Button variant="ghost" className="text-gray-500">
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Attach
-                </Button>
-                <Button variant="ghost" className="text-gray-500">
-                  <ImageIcon className="h-4 w-4 mr-2" />
-                  Image
-                </Button>
-                <Button variant="ghost" className="text-gray-500">
-                  <Smile className="h-4 w-4 mr-2" />
-                  Emoji
-                </Button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <h3 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-500">
-                Welcome to Web3 Chat
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Connect your wallet and start chatting in the decentralized world
-              </p>
-              <Button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-                Start Chatting
+        {/* Message Input */}
+        {selectedChat && (
+          <div className="p-4 border-t dark:border-gray-700">
+            <div className="flex items-center space-x-2">
+              <textarea
+                placeholder="Type your message..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="flex-1 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+                rows="1"
+              />
+              <Button onClick={handleSendMessage} className="bg-purple-500 text-white rounded-full">
+                <Send className="h-5 w-5" />
               </Button>
             </div>
           </div>

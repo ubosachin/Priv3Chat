@@ -33,14 +33,19 @@ export default function Chat() {
   }
 
   return (
-    <div className={`flex flex-col md:flex-row h-screen ${isDarkMode ? "dark" : ""} bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500`}>
+    <div className={`flex h-screen ${isDarkMode ? "dark" : ""} bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500`}>
+      
       {/* Sidebar */}
-      <div className="w-full md:w-1/3 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div className="w-full md:w-1/3 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90">
+        
         {/* Header */}
         <div className="p-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
           <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-500">
             Priv3chat
           </h1>
+          <Button onClick={toggleDarkMode} className="rounded-full">
+            {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
         </div>
 
         {/* Search */}
@@ -80,25 +85,27 @@ export default function Chat() {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 relative">
-        {/* Connect Wallet Button */}
-        <div className="absolute top-4 right-4 hidden md:block">
+      <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90">
+        
+        {/* Chat Header & Wallet Button */}
+        <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+          {selectedChat ? (
+            <h2 className="text-xl font-semibold">
+              {chats.find(chat => chat.id === selectedChat)?.name}
+            </h2>
+          ) : (
+            <h2 className="text-xl font-semibold">Select a Chat</h2>
+          )}
+          
           <Button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
             <Wallet2 className="h-4 w-4 mr-2" />
             Connect Wallet
           </Button>
         </div>
 
+        {/* Chat Messages */}
         {selectedChat ? (
           <>
-            {/* Chat Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-semibold">
-                {chats.find(chat => chat.id === selectedChat)?.name}
-              </h2>
-            </div>
-
-            {/* Messages */}
             <div className="flex-1 p-4 overflow-y-auto">
               <p className="text-gray-500 dark:text-gray-400">
                 No messages yet. Start the conversation!
@@ -106,23 +113,41 @@ export default function Chat() {
             </div>
 
             {/* Message Input */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex flex-col md:flex-row items-center space-x-2">
-              <textarea
-                placeholder="Type your message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="flex-1 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 w-full md:w-auto"
-                rows="1"
-              />
-              <Button onClick={handleSendMessage} className="rounded-full">
-                <Send className="h-4 w-4" />
-              </Button>
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center space-x-2">
+                <textarea
+                  placeholder="Type your message..."
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="flex-1 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+                  rows="1"
+                />
+                <Button onClick={handleSendMessage} className="rounded-full">
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex justify-between mt-2">
+                <Button variant="ghost" className="text-gray-500">
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Attach
+                </Button>
+                <Button variant="ghost" className="text-gray-500">
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  Image
+                </Button>
+                <Button variant="ghost" className="text-gray-500">
+                  <Smile className="h-4 w-4 mr-2" />
+                  Emoji
+                </Button>
+              </div>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-center p-6">
-            <div>
-              <h3 className="text-2xl md:text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-500">
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <h3 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-500">
                 Welcome to Web3 Chat
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">

@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { Menu, Home, Layout, Layers, Wallet } from "lucide-react"; // Removed Wallet from desktop
+import { useState } from "react";
+import { Menu, Home, Layout, Layers, Wallet, Mail } from "lucide-react"; // Added Mail icon for Contact Us
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
-    { href: "/", label: "Home", icon: Home },
-    { href: "/plan", label: "Plan", icon: Layout },
-    { href: "/features", label: "Features", icon: Layers },
+    { href: "#hero", label: "Home", icon: Home },
+    { href: "#features", label: "Features", icon: Layers },
+    { href: "#plans", label: "Plan", icon: Layout },
+    { href: "#contact", label: "Contact Us", icon: Mail }, // Added Contact Us
   ];
 
   const NavItems = () => (
@@ -32,12 +33,12 @@ const Navbar = () => {
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full  bg-black">
+    <header className="sticky top-0 z-50 w-full bg-black">
       <div className="container mx-auto px-6 flex justify-between items-center h-16">
         {/* Logo & Desktop Navigation */}
         <div className="flex items-center space-x-10">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="font-bold text-white text-lg">zkFHE Messenger</span>
+            <span className="font-bold text-white text-lg">Priv3Chat</span>
           </Link>
 
           <nav className="hidden md:flex space-x-6">
@@ -73,7 +74,7 @@ const Navbar = () => {
               onClick={() => setIsOpen(false)}
             >
               <Wallet className="h-6 w-6" /> {/* Wallet Icon Only in Mobile */}
-              <span className="font-bold">zkFHE Messenger</span>
+              <span className="font-bold">Priv3Chat</span>
             </Link>
             <nav className="flex flex-col space-y-4">
               <NavItems />

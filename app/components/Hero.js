@@ -30,7 +30,7 @@ export default function Hero() {
   <img 
     src="/images/img1.png"
     alt="A girl using a secure messaging app" 
-    className="w-96 md:w-[500px] lg:w-[600px] rounded-lg shadow-lg"
+    className="w-96 md:w-[500px] lg:w-[600px] rounded-lg"
   />
 </div>
 

@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, Home, Layout, Layers, Wallet, Mail } from "lucide-react"; // Added Mail icon for Contact Us
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [account, setAccount] = useState(""); // Add state for wallet address
 
   const menuItems = [
     { href: "#hero", label: "Home", icon: Home },
@@ -13,6 +14,23 @@ const Navbar = () => {
     { href: "#plans", label: "Plan", icon: Layout },
     { href: "#contact", label: "Contact Us", icon: Mail }, // Added Contact Us
   ];
+
+  // Add wallet connection function
+  const connectWallet = async () => {
+    try {
+      if (typeof window.ethereum !== "undefined") {
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        setAccount(accounts[0]);
+        setIsOpen(false); // Close mobile menu if open
+      } else {
+        alert("Please install MetaMask!");
+      }
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+    }
+  };
 
   const NavItems = () => (
     <>
@@ -33,7 +51,7 @@ const Navbar = () => {
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-black">
+    <header className="sticky top-0 z-50 w-full bg-black bg-opacity-70 backdrop-blur-md">
       <div className="container mx-auto px-6 flex justify-between items-center h-16">
         {/* Logo & Desktop Navigation */}
         <div className="flex items-center space-x-10">
@@ -58,16 +76,19 @@ const Navbar = () => {
 
         {/* Connect Wallet Button (Desktop) */}
         <div className="hidden md:flex items-center space-x-4">
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-500 transition duration-200">
-            Connect Wallet
+          <button
+            onClick={connectWallet}
+            className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-500 transition duration-200"
+          >
+            {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : "Connect Wallet"}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-black bg-opacity-75">
-          <div className="absolute left-0 top-0 w-3/4 bg-black p-6 space-y-4">
+        <div className="md:hidden fixed inset-0 z-40 bg-black bg-opacity-75 backdrop-blur-sm">
+          <div className="absolute left-0 top-0 w-3/4 bg-black bg-opacity-90 p-6 space-y-4">
             <Link
               href="/"
               className="flex items-center space-x-2 text-white"
@@ -80,10 +101,10 @@ const Navbar = () => {
               <NavItems />
             </nav>
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={connectWallet}
               className="w-full py-2 bg-blue-600 text-white rounded-full hover:bg-blue-500 mt-6 transition duration-200"
             >
-              Connect Wallet
+              {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : "Connect Wallet"}
             </button>
           </div>
         </div>

@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Moon, Sun, Wallet2, Search, Send, Menu, X } from "lucide-react"
 import { Button } from "./ui/button"
+import axios from 'axios'; // We'll use axios for API requests
 
 export default function Chat() {
   const [isDarkMode, setIsDarkMode] = useState(false)
@@ -10,28 +11,91 @@ export default function Chat() {
   const [searchQuery, setSearchQuery] = useState("")
   const [message, setMessage] = useState("")
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [account, setAccount] = useState("")
+  const [chats, setChats] = useState([])  // To store chats from the backend
+  const [messages, setMessages] = useState([])  // To store messages of selected chat
 
+  // Toggle dark mode
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode)
     document.documentElement.classList.toggle("dark")
   }
 
-  const chats = [
-    { id: "1", name: "CryptoWhale", lastMessage: "Did you see the latest NFT drop?", avatar: "/avatar1.png" },
-    { id: "2", name: "BlockchainDev", lastMessage: "Let's discuss the new DeFi protocol", avatar: "/avatar2.png" },
-    { id: "3", name: "TokenTrader", lastMessage: "What's your take on the market?", avatar: "/avatar3.png" },
-  ]
+  // Fetch chats from the backend (replace with real API endpoint)
+  const fetchChats = async () => {
+    try {
+      const response = await axios.get('/api/chats', { params: { account } });
+      setChats(response.data);
+    } catch (error) {
+      console.error('Error fetching chats:', error);
+    }
+  };
 
+  // Fetch messages for selected chat (replace with real API endpoint)
+  const fetchMessages = async (chatId) => {
+    try {
+      const response = await axios.get(`/api/messages/${chatId}`, { params: { account } });
+      setMessages(response.data);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+  };
+
+  // Send message (use backend API to store messages)
+  const handleSendMessage = async () => {
+    if (message.trim()) {
+      const newMessage = {
+        chatId: selectedChat,
+        message,
+        sender: account,
+        timestamp: new Date().toISOString(),
+      };
+
+      try {
+        await axios.post('/api/messages', newMessage);  // Replace with real API endpoint
+        setMessages([...messages, newMessage]);
+        setMessage("");
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
+    }
+  }
+
+  // Connect wallet
+  const connectWallet = async () => {
+    try {
+      if (typeof window.ethereum !== "undefined") {
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        setAccount(accounts[0]);
+        console.log("Connected account:", accounts[0]);
+        fetchChats();  // Fetch chats once the wallet is connected
+      } else {
+        alert("Please install MetaMask!");
+      }
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+    }
+  };
+
+  // Handle search functionality
   const filteredChats = chats.filter((chat) => 
     chat.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      console.log("Sending message:", message)
-      setMessage("")
+  // Handle chat selection
+  const handleChatSelect = (chatId) => {
+    setSelectedChat(chatId);
+    setIsSidebarOpen(false);
+    fetchMessages(chatId);  // Fetch messages for the selected chat
+  };
+
+  useEffect(() => {
+    if (account) {
+      fetchChats(); // Fetch chats when account is connected
     }
-  }
+  }, [account]);
 
   return (
     <div className={`flex h-screen ${isDarkMode ? "dark" : ""} bg-gray-100 dark:bg-gray-900`}>
@@ -70,7 +134,7 @@ export default function Chat() {
               className={`p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
                 selectedChat === chat.id ? "bg-gray-200 dark:bg-gray-600" : ""
               }`}
-              onClick={() => { setSelectedChat(chat.id); setIsSidebarOpen(false); }}
+              onClick={() => handleChatSelect(chat.id)}
             >
               <p className="font-semibold">{chat.name}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">{chat.lastMessage}</p>
@@ -95,16 +159,25 @@ export default function Chat() {
             )}
           </div>
 
-          <Button className="bg-purple-500 text-white flex items-center">
+          <Button onClick={connectWallet} className="bg-purple-500 bg-opacity-80 backdrop-blur-md text-white flex items-center">
             <Wallet2 className="h-5 w-5 mr-2" />
-            Connect Wallet
+            {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : "Connect Wallet"}
           </Button>
         </div>
 
         {/* Chat Messages */}
         <div className="flex-1 p-4 overflow-y-auto">
           {selectedChat ? (
-            <p className="text-gray-500 dark:text-gray-400">No messages yet. Start the conversation!</p>
+            messages.length > 0 ? (
+              messages.map((msg, index) => (
+                <div key={index} className="mb-4">
+                  <div className="font-semibold">{msg.sender}</div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{msg.message}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400">No messages yet. Start the conversation!</p>
+            )
           ) : (
             <div className="flex flex-col items-center justify-center h-full">
               <h3 className="text-2xl font-bold text-purple-500">Welcome to Web3 Chat</h3>
